@@ -1,17 +1,19 @@
 "use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { IoMdClose } from "react-icons/io";
+
 import Button from "../Button";
 
 interface ModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
   onClose: () => void;
   onSubmit: () => void;
   title?: string;
   body?: React.ReactElement;
   footer?: React.ReactElement;
   actionLabel: string;
-  disabled: boolean;
+  disabled?: boolean;
   secondaryAction?: () => void;
   secondaryActionLabel?: string;
 }
@@ -22,16 +24,16 @@ const Modal: React.FC<ModalProps> = ({
   onSubmit,
   title,
   body,
-  footer,
   actionLabel,
+  footer,
   disabled,
   secondaryAction,
   secondaryActionLabel,
 }) => {
-  const [isOpenModal, setOpenModal] = useState(isOpen);
+  const [showModal, setShowModal] = useState(isOpen);
 
   useEffect(() => {
-    setOpenModal(isOpen);
+    setShowModal(isOpen);
   }, [isOpen]);
 
   const handleClose = useCallback(() => {
@@ -39,11 +41,11 @@ const Modal: React.FC<ModalProps> = ({
       return;
     }
 
-    setOpenModal(false);
+    setShowModal(false);
     setTimeout(() => {
       onClose();
     }, 300);
-  }, [disabled, onClose]);
+  }, [onClose, disabled]);
 
   const handleSubmit = useCallback(() => {
     if (disabled) {
@@ -51,7 +53,7 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     onSubmit();
-  }, [disabled, onSubmit]);
+  }, [onSubmit, disabled]);
 
   const handleSecondaryAction = useCallback(() => {
     if (disabled || !secondaryAction) {
@@ -59,11 +61,12 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     secondaryAction();
-  }, [disabled, secondaryAction]);
+  }, [secondaryAction, disabled]);
 
   if (!isOpen) {
     return null;
   }
+
   return (
     <>
       <div
@@ -95,15 +98,14 @@ const Modal: React.FC<ModalProps> = ({
           md:h-auto
           "
         >
-          {/*CONTENT*/}
-
+          {/*content*/}
           <div
             className={`
             translate
             duration-300
             h-full
-            ${isOpenModal ? "translate-y-0" : "translate-y-full"}
-            ${isOpenModal ? "opacity-100" : "opacity-0"}
+            ${showModal ? "translate-y-0" : "translate-y-full"}
+            ${showModal ? "opacity-100" : "opacity-0"}
           `}
           >
             <div
@@ -124,8 +126,7 @@ const Modal: React.FC<ModalProps> = ({
               focus:outline-none
             "
             >
-              {/*HEADER*/}
-
+              {/*header*/}
               <div
                 className="
                 flex 
@@ -152,13 +153,9 @@ const Modal: React.FC<ModalProps> = ({
                 </button>
                 <div className="text-lg font-semibold">{title}</div>
               </div>
-
-              {/*BODY*/}
-
+              {/*body*/}
               <div className="relative p-6 flex-auto">{body}</div>
-
-              {/*FOOTER*/}
-
+              {/*footer*/}
               <div className="flex flex-col gap-2 p-6">
                 <div
                   className="

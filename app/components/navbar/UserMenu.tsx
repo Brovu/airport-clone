@@ -5,20 +5,42 @@ import MenuItem from "./MenuItem";
 import { useCallback, useState } from "react";
 import useRegisterModal from "@/app/hooks/useRegisterModal";
 import useLoginModal from "@/app/hooks/useLoginModal";
+import { SafeUser } from "@/app/types";
+import { signOut } from "next-auth/react";
+import useRentModal from "@/app/hooks/useRentModal";
+import { useRouter } from "next/navigation";
 
-const UserMenu = () => {
+interface UserMenuProps {
+  currentUser?: SafeUser | null | undefined;
+}
+
+const UserMenu: React.FC<UserMenuProps> = ({ currentUser }) => {
+  const router = useRouter();
   const [isOpenMenuItem, setOpenMenuItem] = useState(false);
   const registerModal = useRegisterModal();
   const loginModal = useLoginModal();
+  const rentModal = useRentModal();
 
   const handleOpenMenuItem = useCallback(() => {
     setOpenMenuItem((toggle) => !toggle);
   }, []);
+
+  const onRent = useCallback(() => {
+    if (!currentUser) {
+      return loginModal.onOpen();
+    } else {
+      return rentModal.onOpen();
+    }
+  }, [currentUser, loginModal, rentModal]);
+
   return (
     <div className="relative">
       <div className="flex flex-row items-center gap-3">
-        <div className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer">
-          Your home
+        <div
+          onClick={onRent}
+          className="hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer"
+        >
+          Aib your home
         </div>
         <div
           onClick={handleOpenMenuItem}
@@ -26,15 +48,57 @@ const UserMenu = () => {
         >
           <AiOutlineMenu />
           <div className="hidden md:block">
-            <Avatar />
+            <Avatar src={currentUser?.image} />
           </div>
         </div>
       </div>
       {isOpenMenuItem && (
         <div className="absolute rounded-xl shadow-md w-[40px] md:w-3/4 bg-white overflow-hidden right-0 text-sm top-12">
           <div className="flex flex-col cursor-pointer">
-            <MenuItem onClick={loginModal.onOpen} label="Login" />
-            <MenuItem onClick={registerModal.onOpen} label="Sign Up" />
+            {currentUser ? (
+              <>
+                <MenuItem
+                  onClick={() => {}}
+                  label={`Hi, ${currentUser?.name}!`}
+                />
+                <hr />
+                <MenuItem
+                  onClick={() => {
+                    router.push("/trips");
+                    setOpenMenuItem(false);
+                  }}
+                  label="My trips"
+                />
+                <MenuItem
+                  onClick={() => {
+                    router.push("/reservations");
+                    setOpenMenuItem(false);
+                  }}
+                  label="My reservations"
+                />
+                <MenuItem
+                  onClick={() => {
+                    router.push("/favorites");
+                    setOpenMenuItem(false);
+                  }}
+                  label="My favorites"
+                />
+                <MenuItem
+                  onClick={() => {
+                    router.push("/properties");
+                    setOpenMenuItem(false);
+                  }}
+                  label="My properties"
+                />
+                <hr />
+                <MenuItem onClick={() => signOut()} label="Log out" />
+              </>
+            ) : (
+              <>
+                <MenuItem onClick={loginModal.onOpen} label="Login" />
+                <MenuItem onClick={registerModal.onOpen} label="Sign Up" />
+              </>
+            )}
           </div>
         </div>
       )}

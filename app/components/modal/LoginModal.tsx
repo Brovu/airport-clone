@@ -4,15 +4,17 @@ import { AiFillGithub } from "react-icons/ai";
 import { FcGoogle } from "react-icons/fc";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import useRegisterModal from "@/app/hooks/useRegisterModal";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Modal from "./Modal";
 import Heading from "../Heading";
 import Input from "../inputs/Input";
 import { toast } from "react-hot-toast";
 import Button from "../Button";
 import useLoginModal from "@/app/hooks/useLoginModal";
+import { useRouter } from "next/navigation";
 
 const LoginModal = () => {
+  const router = useRouter();
   const registerModal = useRegisterModal();
   const loginModal = useLoginModal();
   const [isLoading, setLoading] = useState(false);
@@ -28,14 +30,29 @@ const LoginModal = () => {
     },
   });
 
+  const toggle = useCallback(() => {
+    loginModal.onClose();
+    registerModal.onOpen();
+  }, [loginModal, registerModal]);
+
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setLoading(true);
 
     signIn("credentials", {
       ...data,
       redirect: false,
+    }).then((callback) => {
+      setLoading(false);
+      if (callback?.ok) {
+        toast.success("Logged in!");
+        router.refresh();
+        loginModal.onClose();
+      }
+
+      if (callback?.error) {
+        toast.error(callback.error);
+      }
     });
-    
   };
 
   const bodyContent = (
@@ -65,7 +82,7 @@ const LoginModal = () => {
   const footerContent = (
     <div className="flex flex-col gap-4 mt-3">
       <hr />
-      <Button
+      {/*  <Button
         icon={FcGoogle}
         label="Continue with Google"
         outline
@@ -75,20 +92,23 @@ const LoginModal = () => {
         icon={AiFillGithub}
         label="Continue with Github"
         outline
-        onClick={() => {}}
-      />
+        onClick={() => signIn("github")}
+      /> */}
       <div className="text-neutral-500 text-center mt-4 font-light">
         <div className="flex flex-row items-center justify-center gap-2">
-          <div>Forgot your password?</div>
-          <div className="cursor-pointer hover:underline text-teal-400">
-            Click here
+          <div>First time using Brovu Airport?</div>
+          <div
+            onClick={toggle}
+            className="cursor-pointer hover:underline text-teal-400"
+          >
+            Create an account
           </div>
         </div>
       </div>
     </div>
   );
   return (
-    <Modal
+    <Modal 
       disabled={isLoading}
       isOpen={loginModal.isOpen}
       title="Log in"

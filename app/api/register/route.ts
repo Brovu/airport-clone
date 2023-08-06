@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import { request } from "http";
 import prisma from "@/app/libs/prismadb";
 import { NextResponse } from "next/server";
 
